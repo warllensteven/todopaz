@@ -6,7 +6,7 @@ import NavBar from '@/components/NavBar'
 
 const CATEGORIES = ['Restaurante', 'Panadería', 'Barbería', 'Tienda', 'Servicio', 'Farmacia', 'Otro']
 const ADMIN_KEY = 'todopaz2024'
-const emptyForm = { name: '', phone: '', category: 'Restaurante', schedule: '', description: '', is_active: true }
+const emptyForm = { name: '', phone: '', category: 'Restaurante', schedule: '', description: '', is_active: true, image_url: '' }
 
 export default function AdminPage() {
   const [auth, setAuth] = useState(false)
@@ -14,7 +14,8 @@ export default function AdminPage() {
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [form, setForm] = useState(emptyForm)
+  const [form, setForm] = useState<typeof emptyForm>(emptyForm)
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => { if (auth) fetchAll() }, [auth])
 
@@ -25,7 +26,7 @@ export default function AdminPage() {
 
   function openNew() { setForm(emptyForm); setEditingId(null); setShowModal(true) }
   function openEdit(b: Business) {
-    setForm({ name: b.name, phone: b.phone, category: b.category, schedule: b.schedule ?? '', description: b.description ?? '', is_active: b.is_active })
+    setForm({ name: b.name, phone: b.phone, category: b.category, schedule: b.schedule ?? '', description: b.description ?? '', is_active: b.is_active, image_url: b.image_url ?? '' })
     setEditingId(b.id)
     setShowModal(true)
   }
@@ -47,6 +48,19 @@ export default function AdminPage() {
     fetchAll()
   }
 
+    async function uploadImage(file: File) {
+  setUploading(true)
+  const ext = file.name.split('.').pop()
+  const fileName = `${Date.now()}.${ext}`
+  const { error } = await supabase.storage
+    .from('businesses')
+    .upload(fileName, file, { upsert: true })
+  if (error) { alert('Error subiendo imagen'); setUploading(false); return }
+  const { data } = supabase.storage.from('businesses').getPublicUrl(fileName)
+  setForm(f => ({ ...f, image_url: data.publicUrl }))
+  setUploading(false)
+    }
+    
   // — Pantalla de login —
   if (!auth) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg2)' }}>
@@ -142,6 +156,42 @@ export default function AdminPage() {
                 <span style={{ width: '18px', height: '18px', background: '#fff', borderRadius: '50%', position: 'absolute', top: '3px', left: form.is_active ? '23px' : '3px', transition: 'left .2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', display: 'block' }} />
               </button>
             </div>
+
+            <div style={{ marginBottom: '14px' }}>
+  <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '6px' }}>
+    Logo o foto
+  </label>
+
+  {/* Preview */}
+  {form.image_url && (
+    <div style={{ marginBottom: '10px', position: 'relative', width: '80px', height: '80px' }}>
+      <img src={form.image_url} alt="preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }} />
+      <button
+        onClick={() => setForm(f => ({ ...f, image_url: '' }))}
+        style={{ position: 'absolute', top: '-6px', right: '-6px', width: '20px', height: '20px', borderRadius: '50%', background: '#A32D2D', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
+        ✕
+      </button>
+    </div>
+  )}
+
+  {/* Input archivo */}
+  <label style={{
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+    padding: '10px', border: '1px dashed var(--green)', borderRadius: 'var(--radius-sm)',
+    cursor: uploading ? 'not-allowed' : 'pointer', color: 'var(--green)',
+    fontSize: '14px', fontWeight: 500,
+  }}>
+    {uploading ? 'Subiendo...' : '📷 Seleccionar imagen'}
+    <input
+      type="file"
+      accept="image/*"
+      style={{ display: 'none' }}
+      disabled={uploading}
+      onChange={e => { const file = e.target.files?.[0]; if (file) uploadImage(file) }}
+    />
+  </label>
+</div>
 
             <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
               <button onClick={() => setShowModal(false)} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '13px', cursor: 'pointer', color: 'var(--text2)' }}>Cancelar</button>
