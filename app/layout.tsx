@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { SpeedInsights } from '@vercel/speed-insights/next' // 👈 IMPORTANTE
 
 export const metadata: Metadata = {
   title: 'TodoPaz — Negocios de Paz de Ariporo',
@@ -13,7 +14,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body>
+        {children}
+
+        {/* 🔥 Speed Insights */}
+        <SpeedInsights />
+      </body>
     </html>
   )
 }
