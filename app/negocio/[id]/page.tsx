@@ -1,13 +1,32 @@
 'use client'
+// ↑ Este componente se ejecuta en el cliente.
+// Necesario porque usamos hooks (useState, useEffect) y navegación dinámica.
 
+// ─── IMPORTACIONES ───────────────────────────────────────────────
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
-import { Business } from '@/types/business'
-import WhatsAppButton from '@/components/WhatsAppButton'
-import NavBar from '@/components/NavBar'
+// useState → manejar estado (negocio, loading)
+// useEffect → ejecutar lógica al cargar o cambiar el ID
 
+import { useParams, useRouter } from 'next/navigation'
+// useParams → obtener el [id] de la URL dinámica (/negocio/123)
+// useRouter → navegación programática (ej: volver atrás)
+
+import { supabase } from '@/lib/supabase'
+// Cliente para consultar la base de datos
+
+import { Business } from '@/types/business'
+// Tipado del objeto negocio
+
+import WhatsAppButton from '@/components/WhatsAppButton'
+// Botón reutilizable para contactar por WhatsApp
+
+import NavBar from '@/components/NavBar'
+// Barra de navegación global
+
+
+// ─── CONSTANTES ──────────────────────────────────────────────────
 const CATS_META: Record<string, { emoji: string; bg: string }> = {
+  // Mapa de categorías → define emoji + color de fondo
   'Restaurante': { emoji: '🍽', bg: '#E1F5EE' },
   'Panadería':   { emoji: '🥐', bg: '#FAEEDA' },
   'Barbería':    { emoji: '✂️', bg: '#EEEDFE' },
@@ -17,22 +36,42 @@ const CATS_META: Record<string, { emoji: string; bg: string }> = {
   'Otro':        { emoji: '📦', bg: '#F1EFE8' },
 }
 
+// ⚠️ Este ícono no se usa actualmente (podrías eliminarlo o usarlo en el botón WA)
 const WA_ICON = (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.520..." />
   </svg>
 )
 
+
+// ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────
 export default function DetailPage() {
+
+  // ─── PARAMETROS Y ROUTER ───────────────────────────────────────
   const params = useParams()
+  // Obtiene los parámetros dinámicos de la URL
+
   const id = Array.isArray(params.id) ? params.id[0] : params.id
+  // Normaliza el id:
+  // Next puede devolver string o string[]
+  // Aquí garantizamos que siempre sea string
 
   const router = useRouter()
-  const [biz, setBiz] = useState<Business | null>(null)
-  const [loading, setLoading] = useState(true)
+  // Permite navegación (ej: router.back())
 
+
+  // ─── ESTADO ────────────────────────────────────────────────────
+  const [biz, setBiz] = useState<Business | null>(null)
+  // Guarda el negocio cargado desde la DB
+
+  const [loading, setLoading] = useState(true)
+  // Controla estado de carga
+
+
+  // ─── EFECTO: CARGAR NEGOCIO ────────────────────────────────────
   useEffect(() => {
     if (!id) return
+    // Evita ejecutar si aún no hay ID disponible
 
     async function fetchBiz() {
       const { data, error } = await supabase
@@ -40,6 +79,7 @@ export default function DetailPage() {
         .select('*')
         .eq('id', id)
         .single()
+      // .single() → esperamos un solo resultado
 
       if (error) {
         console.error(error)
@@ -52,7 +92,10 @@ export default function DetailPage() {
 
     fetchBiz()
   }, [id])
+  // Se ejecuta cuando cambia el ID (ej: navegación entre negocios)
 
+
+  // ─── RENDER: LOADING ───────────────────────────────────────────
   if (loading) {
     return (
       <>
@@ -64,6 +107,8 @@ export default function DetailPage() {
     )
   }
 
+
+  // ─── RENDER: NO ENCONTRADO ─────────────────────────────────────
   if (!biz) {
     return (
       <>
@@ -75,20 +120,31 @@ export default function DetailPage() {
     )
   }
 
+
+  // ─── DATOS DERIVADOS ───────────────────────────────────────────
   const meta = CATS_META[biz.category] ?? CATS_META['Otro']
+  // Obtiene estilo visual según categoría
+
   const waMsg = encodeURIComponent(
     'Hola, vi tu negocio en TodoPaz y me gustaría obtener más información.'
   )
+  // Mensaje base para WhatsApp (no se usa directamente aquí,
+  // pero podrías pasarlo como prop al botón)
 
+
+  // ─── RENDER PRINCIPAL ──────────────────────────────────────────
   return (
     <>
       <NavBar />
 
-      {/* Header */}
+      {/* ─── HEADER ─────────────────────────────────────────────── */}
       <div style={{ background: 'var(--green)', padding: '16px' }}>
+
+        {/* Botón atrás + título */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
           <button
             onClick={() => router.back()}
+            // Navega a la página anterior
             style={{
               background: 'rgba(255,255,255,0.15)',
               border: 'none',
@@ -112,7 +168,7 @@ export default function DetailPage() {
           </div>
         </div>
 
-        {/* Imagen */}
+        {/* Imagen del negocio */}
         <div
           style={{
             width: '100%',
@@ -132,19 +188,21 @@ export default function DetailPage() {
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
+            // Si no hay imagen → mostramos emoji
             <span style={{ fontSize: '56px' }}>{meta.emoji}</span>
           )}
         </div>
       </div>
 
-      {/* Info */}
+
+      {/* ─── INFORMACIÓN ─────────────────────────────────────────── */}
       <div style={{ padding: '16px 16px 80px' }}>
         <p><strong>Descripción:</strong> {biz.description}</p>
         <p><strong>Horario:</strong> {biz.schedule}</p>
         <p><strong>Teléfono:</strong> +{biz.phone}</p>
 
-        {/* Botón WhatsApp */}
-<WhatsAppButton phone={biz.phone} />
+        {/* Botón de contacto */}
+        <WhatsAppButton phone={biz.phone} />
       </div>
     </>
   )
