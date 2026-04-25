@@ -25,16 +25,12 @@ export default function NavBar() {
   // ─── RENDER ────────────────────────────────────────────────────
   return (
     <nav style={{
-
       background: 'var(--green)',
       padding: '0 16px',
-
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-
-      height: '52px',
-
+      height: '58px',
       position: 'sticky',
       top: 0,
       zIndex: 100,
@@ -43,54 +39,56 @@ export default function NavBar() {
     }}>
 
       {/* ─── LOGO / MARCA ───────────────────────── */}
-      <Link
-        href="/"
-        style={{
+      <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+        <img
+          src="/logo.png"
+          alt="TodoPaz"
+          style={{ height: '56px', width: 'auto' }}
+        />
+        <span style={{
           fontFamily: 'Syne, sans-serif',
           color: '#fff',
           fontSize: '20px',
           fontWeight: 700,
           letterSpacing: '-0.5px',
-          textDecoration: 'none',
-        }}
-      >
-        Todo<span style={{ color: 'var(--amber)' }}>Paz</span>
+        }}>
+          Todo<span style={{ color: 'var(--amber)' }}>Paz</span>
+        </span>
       </Link>
 
-
       {/* ─── NAVEGACIÓN ─────────────────────────── */}
-      <div style={{ display: 'flex', gap: '4px' }}>
+      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
 
-        <Link
-          href="/"
-          // Link al home
+        {/* Link de inicio — resaltado si estamos en "/" */}
+        <Link href="/" style={{
+          background: pathname === '/' ? 'rgba(255,255,255,0.15)' : 'transparent',
+          border: 'none',
+          color: pathname === '/' ? '#fff' : 'rgba(255,255,255,0.6)',
+          fontFamily: 'DM Sans, sans-serif',
+          fontSize: '13px',
+          padding: '6px 12px',
+          borderRadius: '6px',
+          textDecoration: 'none',
+        }}>
+          Inicio
+        </Link>
 
+        {/* Botón de registro — abre WhatsApp con mensaje predefinido */}
+        <a href="https://wa.me/573209640363?text=Hola%2C%20quiero%20registrar%20mi%20negocio%20en%20TodoPaz"
+          target="_blank"
+          rel="noopener noreferrer"
           style={{
-
-            background:
-              pathname === '/'
-                ? 'rgba(255,255,255,0.15)'
-                : 'transparent',
-            // Si estamos en "/" → resaltado
-
-            border: 'none',
-
-            color:
-              pathname === '/'
-                ? '#fff'
-                : 'rgba(255,255,255,0.6)',
-            // Activo = blanco fuerte
-            // Inactivo = blanco tenue
-
+            background: 'var(--amber)',
+            color: 'var(--green)',
             fontFamily: 'DM Sans, sans-serif',
             fontSize: '13px',
+            fontWeight: 700,
             padding: '6px 12px',
             borderRadius: '6px',
             textDecoration: 'none',
-          }}
-        >
-          Inicio
-        </Link>
+            whiteSpace: 'nowrap',
+          }}>Registra tu negocio</a>
+
 
       </div>
     </nav>

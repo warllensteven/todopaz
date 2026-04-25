@@ -526,6 +526,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY
 Es pública (visible en el frontend)
 NO es peligrosa si configuras bien Supabase (RLS)
 🧠 Nivel PRO (seguridad real)
+
 1. 🔐 Activar RLS (Row Level Security)
 
 Debes configurar reglas como:
@@ -542,8 +543,7 @@ solo admin puede editar
 Más adelante:
 
 cliente público → solo lectura
-cliente admin → escritura controlada
-3. ⚡ Manejo de errores
+cliente admin → escritura controlada 3. ⚡ Manejo de errores
 
 Ahora haces:
 
@@ -566,3 +566,69 @@ No haces:
 ❌ createClient en cada archivo
 ✅ reutilizas uno solo
 
+32. bussines
+
+🧠 Nivel PRO (cosas que deberías mejorar pronto)
+
+1. 📦 Separar lógica de negocio (muy importante)
+
+Ahora tienes:
+
+category: string
+
+Problema:
+👉 cualquiera puede meter "restaurante", "Restaurante", "RESTAURANTE"
+
+Solución PRO:
+
+category: 'Restaurante' | 'Panadería' | 'Barbería' | 'Tienda' | 'Servicio' | 'Farmacia' | 'Otro'
+
+👉 Esto evita errores y rompe menos el frontend
+
+2. 📊 Prepararte para métricas (CLAVE para monetizar)
+
+Te falta esto:
+
+clicks?: number
+whatsapp_clicks?: number
+views?: number
+
+👉 Con esto puedes decir:
+
+“Tu negocio recibió 87 clics y 23 mensajes este mes”
+
+💰 = VENTA SEGURA
+
+3. 🛒 Pensando en tu siguiente fase (productos)
+
+Tú mismo ya lo dijiste: pedidos por WhatsApp.
+
+Este modelo se te va a quedar corto.
+
+👉 Próximo paso:
+
+// Nueva tabla (no aquí, pero relacionado)
+Product = {
+id
+business_id
+name
+price
+image_url
+} 4. 🧠 Campo estratégico que te falta
+is_featured?: boolean
+
+👉 Para vender:
+
+"salir primero"
+"destacado"
+"premium" 5. ⚠️ Mejora crítica de phone
+
+Ahora es string libre.
+
+Problema:
+👉 puedes guardar cosas inválidas
+
+Solución futura:
+
+Validación antes de guardar
+Normalización automática

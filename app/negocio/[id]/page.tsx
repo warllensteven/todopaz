@@ -132,6 +132,44 @@ export default function DetailPage() {
   // pero podrías pasarlo como prop al botón)
 
 
+  // nuevo ajuste de horario
+  
+function formatDays(days: string[]): string {
+  // Convierte ['Lun','Mar','Mié','Jue','Vie','Sáb'] → 'Lun – Sáb'
+  // en vez de mostrar todos los días separados
+  const order = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+  if (!days?.length) return ''
+  const sorted = days.sort((a, b) => order.indexOf(a) - order.indexOf(b))
+  if (sorted.length === 1) return sorted[0]
+  return `${sorted[0]} – ${sorted[sorted.length - 1]}`
+}
+
+  function formatHour(h: string) {
+  if (!h) return ''
+  const [hours, minutes] = h.split(':').map(Number)
+  const ampm = hours >= 12 ? 'PM' : 'AM'
+  const h12 = hours % 12 || 12
+  return `${h12}:${minutes.toString().padStart(2, '0')} ${ampm}`
+}
+
+function isOpenNow(biz: Business): boolean {
+  if (!biz.schedule_days?.length) return false
+  const now = new Date()
+  const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+  const today = days[now.getDay()]
+  if (!biz.schedule_days.includes(today)) return false
+  const currentTime = now.getHours() * 60 + now.getMinutes()
+  const [open1H, open1M] = (biz.schedule_open1 || '').split(':').map(Number)
+  const [close1H, close1M] = (biz.schedule_close1 || '').split(':').map(Number)
+  if (currentTime >= open1H * 60 + open1M && currentTime < close1H * 60 + close1M) return true
+  if (biz.schedule_open2 && biz.schedule_close2) {
+    const [open2H, open2M] = biz.schedule_open2.split(':').map(Number)
+    const [close2H, close2M] = biz.schedule_close2.split(':').map(Number)
+    if (currentTime >= open2H * 60 + open2M && currentTime < close2H * 60 + close2M) return true
+  }
+  return false
+}
+
   // ─── RENDER PRINCIPAL ──────────────────────────────────────────
   return (
     <>
@@ -195,15 +233,119 @@ export default function DetailPage() {
       </div>
 
 
-      {/* ─── INFORMACIÓN ─────────────────────────────────────────── */}
-      <div style={{ padding: '16px 16px 80px' }}>
-        <p><strong>Descripción:</strong> {biz.description}</p>
-        <p><strong>Horario:</strong> {biz.schedule}</p>
-        <p><strong>Teléfono:</strong> +{biz.phone}</p>
+      <div style={{ padding: '20px 16px 80px' }}>
+  
+  {/* Descripción */}
+  <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', padding: '16px 18px', marginBottom: '12px' }}>
+    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>Descripción</div>
+    <div style={{ fontSize: '15px', color: 'var(--text)', lineHeight: 1.6 }}>{biz.description}</div>
+  </div>
 
-        {/* Botón de contacto */}
-        <WhatsAppButton phone={biz.phone} />
+  {/* Horario y Teléfono en fila */}
+  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+    <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', padding: '16px 18px' }}>
+  
+  {/* Título + badge abierto/cerrado */}
+  <div style={{
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: '10px'
+}}>
+
+  <div style={{
+    fontSize: '11px',
+    fontWeight: 700,
+    color: 'var(--green)',
+    textTransform: 'uppercase',
+    letterSpacing: '1px'
+  }}>
+    Horario
+  </div>
+
+  {/* Estado: Abierto / Cerrado */}
+  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+    
+    <span style={{
+      width: '10px',
+      height: '10px',
+      borderRadius: '50%',
+      display: 'inline-block',
+      background: isOpenNow(biz) ? '#1D9E75' : '#E53E3E',
+      boxShadow: isOpenNow(biz)
+        ? '0 0 0 3px rgba(29,158,117,0.2)'
+        : '0 0 0 3px rgba(229,62,62,0.2)',
+    }} />
+
+    <span style={{
+      fontSize: '12px',
+      fontWeight: 600,
+      color: isOpenNow(biz) ? '#1D9E75' : '#E53E3E',
+    }}>
+      {isOpenNow(biz) ? 'Abierto' : 'Cerrado'}
+    </span>
+
+  </div>
+</div>
+
+  {/* Días */}
+  {biz.schedule_days?.length > 0 && (
+    <div style={{ fontSize: '14px', color: 'var(--text)', fontWeight: 500, marginBottom: '4px' }}>
+      {formatDays(biz.schedule_days)}
+    </div>
+  )}
+
+  {/* Franja mañana */}
+  {biz.schedule_open1 && (
+    <div style={{ fontSize: '13px', color: 'var(--text2)', marginBottom: '2px' }}>
+      {formatHour(biz.schedule_open1)} – {formatHour(biz.schedule_close1)}
+    </div>
+  )}
+
+  {/* Franja tarde */}
+  {biz.schedule_open2 && (
+    <div style={{ fontSize: '13px', color: 'var(--text2)', marginBottom: '2px' }}>
+      {formatHour(biz.schedule_open2)} – {formatHour(biz.schedule_close2)}
+    </div>
+  )}
+
+  {/* Nota especial */}
+  {biz.schedule_note && (
+    <div style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '6px', fontStyle: 'italic' }}>
+      * {biz.schedule_note}
+    </div>
+  )}
+
+  {/* Fallback por si el negocio tiene solo el campo legacy */}
+  {!biz.schedule_days?.length && biz.schedule && (
+    <div style={{ fontSize: '14px', color: 'var(--text2)' }}>{biz.schedule}</div>
+  )}
+</div>
+    <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', padding: '16px 18px' }}>
+  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>Teléfono</div>
+  <div style={{ fontSize: '14px', color: 'var(--text)', fontWeight: 500 }}>+{biz.phone}</div>
+
+  {biz.email && (
+    <>
+      <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px', marginTop: '12px' }}>Correo</div>
+      <div style={{ fontSize: '14px', color: 'var(--text)', fontWeight: 500 }}>
+        <a href={`mailto:${biz.email}`} style={{ color: 'var(--text)', textDecoration: 'none', wordBreak: 'break-all' }}>{biz.email}</a>
       </div>
+    </>
+  )}
+</div>
+  </div>
+
+  {/* Botón WhatsApp */}
+  
+
+<WhatsAppButton phone={biz.phone} />
+  <p style={{ fontSize: '12px', color: 'var(--text3)', textAlign: 'center', marginTop: '8px' }}>
+    Abre WhatsApp con un mensaje listo para enviar
+  </p>
+</div>
+
+      
     </>
   )
 }

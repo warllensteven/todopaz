@@ -28,10 +28,31 @@ const ADMIN_KEY = 'todopaz2024'
 // Clave simple para proteger el panel. En producción real esto iría
 // en una variable de entorno (.env.local) y usaríamos Supabase Auth.
 
-const emptyForm = { name: '', phone: '', category: 'Restaurante', schedule: '', description: '', is_active: true, image_url: '' }
+
+const emptyForm = {
+  name: '', phone: '', email: '',
+  category: 'Restaurante',
+  schedule: '',
+  schedule_days: [] as string[],
+  schedule_open1: '07:00', schedule_close1: '12:00',
+  schedule_open2: '14:00', schedule_close2: '18:00',
+  schedule_note: '',
+  description: "",
+  is_active: true, image_url: '',
+}
 // Objeto vacío que representa un formulario en blanco.
 // Se usa al abrir el modal para crear un negocio nuevo (resetea los campos).
 
+const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+
+const HOURS = [
+  '06:00', '06:30', '07:00', '07:30', '08:00', '08:30',
+  '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+  '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+  '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
+  '18:00', '18:30', '19:00', '19:30', '20:00', '20:30',
+  '21:00', '21:30', '22:00',
+]
 
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────
 export default function AdminPage() {
@@ -155,20 +176,26 @@ export default function AdminPage() {
     setShowModal(true)    // abre el modal
   }
 
-  function openEdit(b: Business) {
-    // Prepara el modal para editar un negocio existente.
-    setForm({
-      name: b.name,
-      phone: b.phone,
-      category: b.category,
-      schedule: b.schedule ?? '',     // ?? '' evita que quede undefined
-      description: b.description ?? '',
-      is_active: b.is_active,
-      image_url: b.image_url ?? '',
-    })
-    setEditingId(b.id)   // guarda el ID para que save() sepa que es un UPDATE
-    setShowModal(true)   // abre el modal
-  }
+function openEdit(b: Business) {
+  setForm({
+    name: b.name,
+    phone: b.phone,
+    email: b.email ?? '',
+    category: b.category,
+    description: b.description ?? '',   // ← faltaba este
+    schedule: b.schedule ?? '',
+    schedule_days: b.schedule_days ?? [],
+    schedule_open1: b.schedule_open1 || '07:00',
+    schedule_close1: b.schedule_close1 || '12:00',
+    schedule_open2: b.schedule_open2 || '14:00',
+    schedule_close2: b.schedule_close2 || '18:00',
+    schedule_note: b.schedule_note ?? '',
+    is_active: b.is_active,
+    image_url: b.image_url ?? '',
+  })
+  setEditingId(b.id)
+  setShowModal(true)
+}
 
 
   // ─── RENDER: PANTALLA DE LOGIN ────────────────────────────────
@@ -227,7 +254,13 @@ export default function AdminPage() {
 
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 500, fontSize: '14px' }}>{b.name}</div>
-              <div style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '2px' }}>{b.category} · {b.schedule}</div>
+              <div style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '2px' }}>
+  {b.category}
+  {b.schedule_days?.length > 0
+    ? ` · ${b.schedule_days[0]}–${b.schedule_days[b.schedule_days.length - 1]} ${b.schedule_open1}–${b.schedule_close1}${b.schedule_open2 ? ' / ' + b.schedule_open2 + '–' + b.schedule_close2 : ''}`
+    : b.schedule ? ` · ${b.schedule}` : ''
+  }
+</div>
             </div>
 
             <div style={{ display: 'flex', gap: '6px' }}>
@@ -256,38 +289,143 @@ export default function AdminPage() {
 
             {/* Campos de texto — se generan dinámicamente desde un array
                 para evitar repetir el mismo bloque de JSX tres veces */}
-            {[
-              { label: 'Nombre', key: 'name', placeholder: 'Ej: Panadería El Trigo' },
-              { label: 'Teléfono WA', key: 'phone', placeholder: '573001234567' },
-              { label: 'Horario', key: 'schedule', placeholder: 'Lun-Sáb 7am-7pm' },
-            ].map(({ label, key, placeholder }) => (
-              <div key={key} style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '6px' }}>{label}</label>
-                <input
-                  placeholder={placeholder}
-                  value={(form as any)[key]}
-                  // (form as any)[key] accede dinámicamente al campo del form por nombre.
-                  // "as any" es un escape de TypeScript para permitir acceso dinámico.
-                  onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                  // [key] entre corchetes permite usar una variable como nombre de propiedad.
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}
-                />
-              </div>
-            ))}
+            {/* Campos de texto — se generan dinámicamente desde un array */}
+{/* Nombre */}
+<div style={{ marginBottom: '14px' }}>
+  <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '6px' }}>Nombre</label>
+  <input
+    placeholder="Ej: Panadería El Trigo"
+    value={form.name}
+    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+    style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}
+  />
+</div>
 
-            {/* Select de categoría */}
-            <div style={{ marginBottom: '14px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '6px' }}>Categoría</label>
-              <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}>
-                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
+{/* Teléfono y Correo en la misma fila */}
+<div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
+  <div style={{ flex: 1 }}>
+    <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '6px' }}>Teléfono WA</label>
+    <input
+      placeholder="573001234567"
+      value={form.phone}
+      onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+      style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}
+    />
+  </div>
+  <div style={{ flex: 1 }}>
+    <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '6px' }}>Correo <span style={{ fontSize: '11px', fontWeight: 400 }}>(opcional)</span></label>
+    <input
+      placeholder="negocio@gmail.com"
+      value={form.email}
+      onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+      style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}
+    />
+  </div>
+</div>
 
-            {/* Textarea de descripción */}
-            <div style={{ marginBottom: '14px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '6px' }}>Descripción</label>
-              <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="¿Qué ofrece este negocio?" style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)', minHeight: '80px', resize: 'vertical' }} />
-            </div>
+
+{/* Descripción */}
+<div style={{ marginBottom: '14px' }}>
+  <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '6px' }}>Descripción</label>
+  <textarea
+    value={form.description}
+    onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+    placeholder="¿Qué ofrece este negocio?"
+    style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)', minHeight: '80px', resize: 'vertical' }}
+  />
+</div>
+
+{/* Select de categoría */}
+<div style={{ marginBottom: '14px' }}>
+  <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '6px' }}>Categoría</label>
+  <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}>
+    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+  </select>
+</div>
+
+{/* Días de atención */}
+<div style={{ marginBottom: '14px' }}>
+  <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '8px' }}>
+    Días de atención
+  </label>
+  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+    {DAYS.map(day => {
+      const selected = form.schedule_days.includes(day)
+      return (
+        <button
+          key={day}
+          type="button"
+          onClick={() => setForm(f => ({
+            ...f,
+            schedule_days: selected
+              ? f.schedule_days.filter(d => d !== day)
+              : [...f.schedule_days, day]
+          }))}
+          style={{
+            padding: '6px 12px', borderRadius: '20px', fontSize: '13px',
+            fontWeight: 500, cursor: 'pointer', border: 'none',
+            background: selected ? 'var(--green)' : 'var(--gray-light)',
+            color: selected ? '#fff' : 'var(--text2)',
+            transition: 'all .2s',
+          }}
+        >
+          {day}
+        </button>
+      )
+    })}
+  </div>
+</div>
+
+{/* Franja mañana */}
+<div style={{ marginBottom: '14px' }}>
+  <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '8px' }}>
+    Franja mañana
+  </label>
+  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+    <select value={form.schedule_open1} onChange={e => setForm(f => ({ ...f, schedule_open1: e.target.value }))}
+      style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}>
+      {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+    </select>
+    <span style={{ color: 'var(--text3)', fontWeight: 500 }}>—</span>
+    <select value={form.schedule_close1} onChange={e => setForm(f => ({ ...f, schedule_close1: e.target.value }))}
+      style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}>
+      {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+    </select>
+  </div>
+</div>
+
+{/* Franja tarde */}
+<div style={{ marginBottom: '14px' }}>
+  <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '8px' }}>
+    Franja tarde <span style={{ fontSize: '11px', fontWeight: 400, color: 'var(--text3)' }}>(opcional)</span>
+  </label>
+  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+    <select value={form.schedule_open2} onChange={e => setForm(f => ({ ...f, schedule_open2: e.target.value }))}
+      style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}>
+      <option value="">No aplica</option>
+      {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+    </select>
+    <span style={{ color: 'var(--text3)', fontWeight: 500 }}>—</span>
+    <select value={form.schedule_close2} onChange={e => setForm(f => ({ ...f, schedule_close2: e.target.value }))}
+      style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}>
+      <option value="">No aplica</option>
+      {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+    </select>
+  </div>
+</div>
+
+{/* Nota especial */}
+<div style={{ marginBottom: '14px' }}>
+  <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '6px' }}>
+    Nota especial <span style={{ fontSize: '11px', fontWeight: 400 }}>(opcional)</span>
+  </label>
+  <input
+    placeholder='Ej: Domingos solo hasta las 2pm'
+    value={form.schedule_note}
+    onChange={e => setForm(f => ({ ...f, schedule_note: e.target.value }))}
+    style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}
+  />
+</div>
 
             {/* Toggle de negocio activo / inactivo */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>

@@ -109,7 +109,7 @@ export default function Home() {
       <NavBar />
 
       {/* ─── HERO ─────────────────────────────────────────────── */}
-      <div style={{ background: 'var(--green)', padding: '20px 16px 0', color: '#fff' }}>
+      <div style={{ background: 'var(--green)', padding: '4px 16px 0', color: '#fff' }}>
 
         {/* Título */}
         <h2 style={{
