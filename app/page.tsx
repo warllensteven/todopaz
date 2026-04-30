@@ -22,26 +22,26 @@ import BizCard from '@/components/BizCard'
 
 // ─── CONSTANTES ──────────────────────────────────────────────────
 const CATEGORIES = [
-  'Todos',
-  'Restaurante',
-  'Panadería',
-  'Barbería',
-  'Tienda',
-  'Servicio',
-  'Farmacia',
-  'Otro'
+  'Restaurante', 'Panadería', 'Barbería', 'Supermercado', 'Estética', 'Accesorios',
+  'Servicio', 'Farmacia', 'Ropa', 'Calzado', 'Tienda Naturista', 'Bar', 'Otro'
 ]
 // Lista de categorías disponibles para filtrar.
 // "Todos" permite mostrar todo sin filtro.
 
 const CATS_EMOJI: Record<string, string> = {
-  'Restaurante': '🍽',
-  'Panadería': '🥐',
-  'Barbería': '✂️',
-  'Tienda': '🛒',
-  'Servicio': '🔧',
-  'Farmacia': '💊',
-  'Otro': '📦',
+  'Restaurante':      '🍽',
+  'Panadería':        '🥐',
+  'Barbería':         '✂️',
+  'Supermercado':     '🛒',
+  'Estética':         '💅',
+  'Accesorios':       '💍',
+  'Servicio':         '🔧',
+  'Farmacia':         '💊',
+  'Ropa':             '👕',
+  'Calzado':          '👟',
+  'Tienda Naturista': '🌿',
+  'Bar':              '🍺',
+  'Otro':             '📦',
 }
 // Mapa de categoría → emoji para UI
 
@@ -127,7 +127,7 @@ export default function Home() {
           color: 'rgba(255,255,255,0.65)',
           marginBottom: '14px'
         }}>
-          Encuentra todo lo que necesitas en tu municipio
+          Encuentra todo lo que necesitas en un solo lugar
         </p>
 
         {/* Input de búsqueda */}

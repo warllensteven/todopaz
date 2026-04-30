@@ -12,13 +12,19 @@ import { Business } from '@/types/business'
 
 // ─── METADATA DE CATEGORÍAS ──────────────────────────────────────
 const CATS_META: Record<string, { emoji: string; bg: string }> = {
-  'Restaurante': { emoji: '🍽', bg: '#E1F5EE' },
-  'Panadería':   { emoji: '🥐', bg: '#FAEEDA' },
-  'Barbería':    { emoji: '✂️', bg: '#EEEDFE' },
-  'Tienda':      { emoji: '🛒', bg: '#FAECE7' },
-  'Servicio':    { emoji: '🔧', bg: '#E6F1FB' },
-  'Farmacia':    { emoji: '💊', bg: '#EAF3DE' },
-  'Otro':        { emoji: '📦', bg: '#F1EFE8' },
+  'Restaurante':      { emoji: '🍽', bg: '#E1F5EE' },
+  'Panadería':        { emoji: '🥐', bg: '#FAEEDA' },
+  'Barbería':         { emoji: '✂️', bg: '#EEEDFE' },
+  'Supermercado':     { emoji: '🛒', bg: '#FAECE7' },
+  'Estética':         { emoji: '💅', bg: '#FDE8F5' },
+  'Accesorios':       { emoji: '💍', bg: '#FEF9E7' },
+  'Servicio':         { emoji: '🔧', bg: '#E6F1FB' },
+  'Farmacia':         { emoji: '💊', bg: '#EAF3DE' },
+  'Ropa':             { emoji: '👕', bg: '#EAF0FB' },
+  'Calzado':          { emoji: '👟', bg: '#FFF3E0' },
+  'Tienda Naturista': { emoji: '🌿', bg: '#E8F5E9' },
+  'Bar':              { emoji: '🍺', bg: '#FFF8E1' },
+  'Otro':             { emoji: '📦', bg: '#F1EFE8' },
 }
 // Mapa que define:
 // - emoji visual
@@ -33,6 +39,33 @@ export default function BizCard({ biz }: { biz: Business }) {
   // Obtiene metadata de la categoría
   // Si no existe → usa "Otro" como fallback (seguridad)
 
+
+  // Funcion open/close
+  function isOpenNow(biz: Business): boolean {
+  if (!biz.schedule_days?.length) return false
+  const now = new Date()
+  const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+  const today = days[now.getDay()]
+  if (!biz.schedule_days.includes(today)) return false
+
+  const currentTime = now.getHours() * 60 + now.getMinutes()
+
+  const [open1H, open1M] = (biz.schedule_open1 || '').split(':').map(Number)
+  const [close1H, close1M] = (biz.schedule_close1 || '').split(':').map(Number)
+  const open1 = open1H * 60 + open1M
+  const close1 = close1H * 60 + close1M
+  if (currentTime >= open1 && currentTime < close1) return true
+
+  if (biz.schedule_open2 && biz.schedule_close2) {
+    const [open2H, open2M] = biz.schedule_open2.split(':').map(Number)
+    const [close2H, close2M] = biz.schedule_close2.split(':').map(Number)
+    const open2 = open2H * 60 + open2M
+    const close2 = close2H * 60 + close2M
+    if (currentTime >= open2 && currentTime < close2) return true
+  }
+
+  return false
+}
 
   // ─── RENDER ────────────────────────────────────────────────────
   return (
@@ -108,25 +141,15 @@ export default function BizCard({ biz }: { biz: Business }) {
 
             {/* Badge de estado */}
             <span style={{
-              background: 'var(--green-light)',
-              color: 'var(--green)',
-              fontSize: '11px',
-              fontWeight: 500,
-              padding: '2px 8px',
-              borderRadius: '10px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-            }}>
-              <span style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: 'var(--green)',
-                display: 'inline-block'
-              }} />
-              Abierto
-            </span>
+  background: isOpenNow(biz) ? 'var(--green-light)' : 'var(--red-light)',
+color: isOpenNow(biz) ? 'var(--green)' : 'var(--red)',
+  fontSize: '11px', fontWeight: 500, padding: '2px 8px',
+  borderRadius: '10px', display: 'inline-flex', alignItems: 'center', gap: '4px',
+}}>
+  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'currentColor', display: 'inline-block' }} />
+  {isOpenNow(biz) ? 'Abierto' : 'Cerrado'}
+</span>
+              
           </div>
 
           {/* Categoría */}
