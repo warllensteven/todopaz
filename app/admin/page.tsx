@@ -20,7 +20,10 @@ import NavBar from '@/components/NavBar'
 
 
 // ─── CONSTANTES ──────────────────────────────────────────────────
-const CATEGORIES = ['Restaurante', 'Panadería', 'Barbería', 'Tienda', 'Servicio', 'Farmacia', 'Otro']
+const CATEGORIES = [
+  'Restaurante', 'Panadería', 'Barbería', 'Supermercado', 'Estetica', 'Accesorios',
+  'Servicio', 'Farmacia', 'Ropa', 'Calzado', 'Tienda Naturista', 'Bar', 'Otro'
+]
 // Lista de categorías disponibles. Se usa para poblar el select del formulario.
 // Si en el futuro agregas una categoría, solo la añades aquí.
 
@@ -30,7 +33,7 @@ const ADMIN_KEY = 'todopaz2024'
 
 
 const emptyForm = {
-  name: '', phone: '', email: '',
+  name: '', phone: '', address: '',
   category: 'Restaurante',
   schedule: '',
   schedule_days: [] as string[],
@@ -46,12 +49,13 @@ const emptyForm = {
 const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 
 const HOURS = [
-  '06:00', '06:30', '07:00', '07:30', '08:00', '08:30',
+  '00:00', '00:30', '01:00', '01:30', '02:00',
+  '05:00', '05:30', '06:00', '06:30', '07:00', '07:30', '08:00', '08:30',
   '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
   '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
   '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
   '18:00', '18:30', '19:00', '19:30', '20:00', '20:30',
-  '21:00', '21:30', '22:00',
+  '21:00', '21:30', '22:00', '22:30', '23:00', '23:30',
 ]
 
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────
@@ -180,7 +184,7 @@ function openEdit(b: Business) {
   setForm({
     name: b.name,
     phone: b.phone,
-    email: b.email ?? '',
+    address: b.address ?? '',
     category: b.category,
     description: b.description ?? '',   // ← faltaba este
     schedule: b.schedule ?? '',
@@ -313,11 +317,11 @@ function openEdit(b: Business) {
     />
   </div>
   <div style={{ flex: 1 }}>
-    <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '6px' }}>Correo <span style={{ fontSize: '11px', fontWeight: 400 }}>(opcional)</span></label>
+    <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '6px' }}>Direccion <span style={{ fontSize: '11px', fontWeight: 400 }}>(opcional)</span></label>
     <input
-      placeholder="negocio@gmail.com"
-      value={form.email}
-      onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+      placeholder="Cra X # X - XX"
+      value={form.address}
+      onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
       style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}
     />
   </div>

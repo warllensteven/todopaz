@@ -39,7 +39,7 @@ export default function NavBar() {
     }}>
 
       {/* ─── LOGO / MARCA ───────────────────────── */}
-      <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+      <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', minWidth: 0, overflow: 'hidden' }}>
         <img
           src="/logo.png"
           alt="TodoPaz"
@@ -57,23 +57,22 @@ export default function NavBar() {
       </Link>
 
       {/* ─── NAVEGACIÓN ─────────────────────────── */}
-      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+<div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 }}>
 
-        {/* Link de inicio — resaltado si estamos en "/" */}
-        <Link href="/" style={{
-          background: pathname === '/' ? 'rgba(255,255,255,0.15)' : 'transparent',
-          border: 'none',
-          color: pathname === '/' ? '#fff' : 'rgba(255,255,255,0.6)',
-          fontFamily: 'DM Sans, sans-serif',
-          fontSize: '13px',
-          padding: '6px 12px',
-          borderRadius: '6px',
-          textDecoration: 'none',
-        }}>
-          Inicio
-        </Link>
+  <Link href="/" style={{
+    background: pathname === '/' ? 'transparent' : 'rgba(255,255,255,0.15)',
+    color: pathname === '/' ? 'rgba(255,255,255,0.6)' : '#fff',
+    fontFamily: 'DM Sans, sans-serif',
+    fontSize: '12px',
+    padding: '6px 8px',
+    borderRadius: '6px',
+    textDecoration: 'none',
+    whiteSpace: 'nowrap',
+  }}>
+    Inicio
+  </Link>
 
-        {/* Botón de registro — abre WhatsApp con mensaje predefinido */}
+  {/* Botón de registro — abre WhatsApp con mensaje predefinido */}
         <a href="https://wa.me/573209640363?text=Hola%2C%20quiero%20registrar%20mi%20negocio%20en%20TodoPaz"
           target="_blank"
           rel="noopener noreferrer"
@@ -88,9 +87,9 @@ export default function NavBar() {
             textDecoration: 'none',
             whiteSpace: 'nowrap',
           }}>Registra tu negocio</a>
-
-
-      </div>
+    
+</div>
     </nav>
   )
 }
+

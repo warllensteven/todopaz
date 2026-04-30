@@ -325,11 +325,11 @@ function isOpenNow(biz: Business): boolean {
   <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>Teléfono</div>
   <div style={{ fontSize: '14px', color: 'var(--text)', fontWeight: 500 }}>+{biz.phone}</div>
 
-  {biz.email && (
+  {biz.address && (
     <>
-      <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px', marginTop: '12px' }}>Correo</div>
+      <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px', marginTop: '12px' }}>Direccion</div>
       <div style={{ fontSize: '14px', color: 'var(--text)', fontWeight: 500 }}>
-        <a href={`mailto:${biz.email}`} style={{ color: 'var(--text)', textDecoration: 'none', wordBreak: 'break-all' }}>{biz.email}</a>
+        <a href={`mailto:${biz.address}`} style={{ color: 'var(--text)', textDecoration: 'none', wordBreak: 'break-all' }}>{biz.address}</a>
       </div>
     </>
   )}

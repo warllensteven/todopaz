@@ -30,3 +30,14 @@ body {
   min-height: 100vh;
   font-size: 15px;
 }
+
+/* Evita zoom en inputs en iPhone */
+input, select, textarea {
+  font-size: 16px !important;
+}
+
+/* Evita scroll horizontal global */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}

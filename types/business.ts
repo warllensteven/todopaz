@@ -18,7 +18,7 @@ export type Business = {
   // Ej: "573001234567"
   // Se usa para generar el link wa.me
 
-  email: string | null
+  address: string | null
   // correo electronico personal o de la empresa (SIN formato)
   // Ej: "ejemplo@gmail.com"
 
