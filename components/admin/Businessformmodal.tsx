@@ -158,18 +158,25 @@ export default function BusinessFormModal({ form, setForm, editingId, uploading,
         </div>
  
         {/* Franja mañana */}
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>Franja mañana</label>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <select value={form.schedule_open1} onChange={e => setForm(f => ({ ...f, schedule_open1: e.target.value }))} style={inputStyle}>
-              {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
-            </select>
-            <span style={{ color: 'var(--text3)', fontWeight: 500 }}>—</span>
-            <select value={form.schedule_close1} onChange={e => setForm(f => ({ ...f, schedule_close1: e.target.value }))} style={inputStyle}>
-              {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
-            </select>
-          </div>
-        </div>
+        {/* Franja mañana */}
+<div style={{ marginBottom: '14px' }}>
+  <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '8px' }}>
+    Franja mañana <span style={{ fontSize: '11px', fontWeight: 400, color: 'var(--text3)' }}>(opcional)</span>
+  </label>
+  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+    <select value={form.schedule_open1} onChange={e => setForm(f => ({ ...f, schedule_open1: e.target.value }))}
+      style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}>
+      <option value="">No aplica</option>
+      {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+    </select>
+    <span style={{ color: 'var(--text3)', fontWeight: 500 }}>—</span>
+    <select value={form.schedule_close1} onChange={e => setForm(f => ({ ...f, schedule_close1: e.target.value }))}
+      style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}>
+      <option value="">No aplica</option>
+      {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+    </select>
+  </div>
+</div>
  
         {/* Franja tarde */}
         <div style={{ marginBottom: '14px' }}>

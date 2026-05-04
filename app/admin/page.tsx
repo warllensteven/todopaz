@@ -11,12 +11,12 @@ import BusinessFormModal from '@/components/admin/Businessformmodal'
 const emptyForm = {
   name: '', phone: '', address: '',
   category: 'Restaurante',
+  description: '',
   schedule: '',
   schedule_days: [] as string[],
-  schedule_open1: '07:00', schedule_close1: '12:00',
-  schedule_open2: '14:00', schedule_close2: '18:00',
+  schedule_open1: '', schedule_close1: '',  // ← vacíos por defecto
+  schedule_open2: '', schedule_close2: '',
   schedule_note: '',
-  description: '',
   is_active: true, image_url: '',
 }
  
