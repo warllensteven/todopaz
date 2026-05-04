@@ -31,7 +31,6 @@ hasta
 
 - Filtrar por:
   - Categoría + texto combinado
-  - Horario (abierto/cerrado)
   - Popularidad
 
 ---
