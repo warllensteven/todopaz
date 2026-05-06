@@ -6,7 +6,7 @@ import { Business } from '@/types/business'
 import NavBar from '@/components/NavBar'
 import AdminLoginScreen from '@/components/admin/AdminLoginScreen'
 import BusinessListItem from '@/components/admin/Businesslistitem'
-import BusinessFormModal from '@/components/admin/BusinessFormModal' // arreglo
+import BusinessFormModal from '@/components/admin/Businessformmodal' // arreglo
 
 const emptyForm = {
   name: '', phone: '', address: '',
