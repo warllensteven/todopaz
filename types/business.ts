@@ -30,6 +30,10 @@ export type Business = {
   // URL pública de la imagen (logo o foto)
   // null = no tiene imagen → se usa emoji fallback
 
+  image_focal_x: number  // Punto focal horizontal (0-100), default 50
+ 
+  image_focal_y: number  // Punto focal vertical (0-100), default 50
+
   schedule: string
   // campo legacy, lo mantenemos por compatibilidad
 

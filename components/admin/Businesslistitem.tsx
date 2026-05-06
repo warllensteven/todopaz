@@ -1,5 +1,6 @@
 'use client'
  
+import { useRouter } from 'next/navigation'
 import { Business } from '@/types/business'
  
 interface Props {
@@ -9,6 +10,8 @@ interface Props {
 }
  
 export default function BusinessListItem({ business: b, onEdit, onDelete }: Props) {
+  const router = useRouter()
+ 
   return (
     <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
  
@@ -32,6 +35,12 @@ export default function BusinessListItem({ business: b, onEdit, onDelete }: Prop
           style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text2)', borderRadius: 'var(--radius-sm)', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}
         >
           Editar
+        </button>
+        <button
+          onClick={() => router.push(`/admin/productos/${b.id}`)}
+          style={{ background: 'transparent', border: '1px solid var(--green)', color: 'var(--green)', borderRadius: 'var(--radius-sm)', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}
+        >
+          Productos
         </button>
         <button
           onClick={() => onDelete(b.id)}

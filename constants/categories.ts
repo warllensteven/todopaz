@@ -3,12 +3,13 @@
 // Importar desde aquí en todos los componentes que lo necesiten.
  
 export const CATEGORIES = [
-  'Restaurante', 'Panadería', 'Barbería', 'Supermercado', 'Estética', 'Accesorios',
+  'Restaurante', 'Comidas Rapidas', 'Panadería', 'Barbería', 'Supermercado', 'Estética', 'Accesorios',
   'Servicio', 'Farmacia', 'Ropa', 'Calzado', 'Tienda Naturista', 'Bar', 'Otro'
 ]
  
 export const CATS_EMOJI: Record<string, string> = {
   'Restaurante':      '🍽',
+  'Comidas Rapidas':  '🍔',
   'Panadería':        '🥐',
   'Barbería':         '✂️',
   'Supermercado':     '🛒',
@@ -25,6 +26,7 @@ export const CATS_EMOJI: Record<string, string> = {
  
 export const CATS_META: Record<string, { emoji: string; bg: string }> = {
   'Restaurante':      { emoji: '🍽', bg: '#E1F5EE' },
+  'Comidas Rapidas':  { emoji: '🍔', bg: '#E1F5EE' },
   'Panadería':        { emoji: '🥐', bg: '#FAEEDA' },
   'Barbería':         { emoji: '✂️', bg: '#EEEDFE' },
   'Supermercado':     { emoji: '🛒', bg: '#FAECE7' },

@@ -35,8 +35,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       {/* lang="es" → importante para SEO y accesibilidad */}
-
-      <body>
+      <body >
         {/* children → aquí se renderizan TODAS las páginas */}
         {/* Ej: Home, Admin, Detail, etc */}
         {children}

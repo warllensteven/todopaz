@@ -1,5 +1,8 @@
 'use client'
  
+import { useState } from 'react'
+import FocalPointPicker from '@/components/admin/FocalPointPicker'
+ 
 interface FormState {
   name: string
   phone: string
@@ -15,6 +18,8 @@ interface FormState {
   description: string
   is_active: boolean
   image_url: string
+  image_focal_x: number
+  image_focal_y: number
 }
  
 interface Props {
@@ -57,11 +62,26 @@ const labelStyle = {
 }
  
 export default function BusinessFormModal({ form, setForm, editingId, uploading, onSave, onClose, onUpload }: Props) {
+  const [showFocalPicker, setShowFocalPicker] = useState(false)
+ 
   return (
-    <div
-      onClick={e => e.target === e.currentTarget && onClose()}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
-    >
+    <>
+      {showFocalPicker && form.image_url && (
+        <FocalPointPicker
+          imageSrc={form.image_url}
+          initialX={form.image_focal_x ?? 50}
+          initialY={form.image_focal_y ?? 50}
+          onConfirm={(x, y) => {
+            setForm(f => ({ ...f, image_focal_x: x, image_focal_y: y }))
+            setShowFocalPicker(false)
+          }}
+          onCancel={() => setShowFocalPicker(false)}
+        />
+      )}
+      <div
+        onClick={e => e.target === e.currentTarget && onClose()}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+      >
       <div style={{ background: 'var(--bg)', borderRadius: '16px 16px 0 0', padding: '24px 20px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
  
         <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '18px', fontWeight: 700, marginBottom: '20px' }}>
@@ -158,25 +178,18 @@ export default function BusinessFormModal({ form, setForm, editingId, uploading,
         </div>
  
         {/* Franja mañana */}
-        {/* Franja mañana */}
-<div style={{ marginBottom: '14px' }}>
-  <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: '8px' }}>
-    Franja mañana <span style={{ fontSize: '11px', fontWeight: 400, color: 'var(--text3)' }}>(opcional)</span>
-  </label>
-  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-    <select value={form.schedule_open1} onChange={e => setForm(f => ({ ...f, schedule_open1: e.target.value }))}
-      style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}>
-      <option value="">No aplica</option>
-      {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
-    </select>
-    <span style={{ color: 'var(--text3)', fontWeight: 500 }}>—</span>
-    <select value={form.schedule_close1} onChange={e => setForm(f => ({ ...f, schedule_close1: e.target.value }))}
-      style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', color: 'var(--text)' }}>
-      <option value="">No aplica</option>
-      {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
-    </select>
-  </div>
-</div>
+        <div style={{ marginBottom: '14px' }}>
+          <label style={labelStyle}>Franja mañana</label>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <select value={form.schedule_open1} onChange={e => setForm(f => ({ ...f, schedule_open1: e.target.value }))} style={inputStyle}>
+              {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+            </select>
+            <span style={{ color: 'var(--text3)', fontWeight: 500 }}>—</span>
+            <select value={form.schedule_close1} onChange={e => setForm(f => ({ ...f, schedule_close1: e.target.value }))} style={inputStyle}>
+              {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+            </select>
+          </div>
+        </div>
  
         {/* Franja tarde */}
         <div style={{ marginBottom: '14px' }}>
@@ -225,7 +238,7 @@ export default function BusinessFormModal({ form, setForm, editingId, uploading,
           <label style={labelStyle}>Logo o foto</label>
           {form.image_url && (
             <div style={{ marginBottom: '10px', position: 'relative', width: '80px', height: '80px' }}>
-              <img src={form.image_url} alt="preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }} />
+              <img src={form.image_url} alt="preview" style={{ width: '80px', height: '80px', objectFit: 'cover', objectPosition: `${form.image_focal_x ?? 50}% ${form.image_focal_y ?? 50}%`, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }} />
               <button
                 onClick={() => setForm(f => ({ ...f, image_url: '' }))}
                 style={{ position: 'absolute', top: '-6px', right: '-6px', width: '20px', height: '20px', borderRadius: '50%', background: '#A32D2D', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -233,6 +246,15 @@ export default function BusinessFormModal({ form, setForm, editingId, uploading,
                 ✕
               </button>
             </div>
+          )}
+ 
+          {form.image_url && (
+            <button
+              onClick={() => setShowFocalPicker(true)}
+              style={{ width: '100%', padding: '9px', marginBottom: '8px', background: 'transparent', border: '1px solid var(--green)', borderRadius: 'var(--radius-sm)', color: 'var(--green)', fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+            >
+              🎯 Ajustar punto focal
+            </button>
           )}
           <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', border: '1px dashed var(--green)', borderRadius: 'var(--radius-sm)', cursor: uploading ? 'not-allowed' : 'pointer', color: 'var(--green)', fontSize: '14px', fontWeight: 500 }}>
             {uploading ? 'Subiendo...' : '📷 Seleccionar imagen'}
@@ -264,5 +286,7 @@ export default function BusinessFormModal({ form, setForm, editingId, uploading,
  
       </div>
     </div>
+    </>
   )
 }
+ 
