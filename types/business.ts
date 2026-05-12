@@ -60,6 +60,8 @@ export type Business = {
   // true → visible
   // false → oculto (pero sigue existiendo en admin)
 
+  owner_id: string | null  // ← nuevo
+  
   created_at: string
   // Fecha de creación (timestamp)
   // Se usa para ordenar (más recientes primero)

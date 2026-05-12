@@ -6,15 +6,17 @@ import { Business } from '@/types/business'
 import NavBar from '@/components/NavBar'
 import AdminLoginScreen from '@/components/admin/AdminLoginScreen'
 import BusinessListItem from '@/components/admin/Businesslistitem'
-import BusinessFormModal from '@/components/admin/Businessformmodal' // arreglo
+import BusinessFormModal from '@/components/admin/Businessformmodal'
 
+// ─── FORMULARIO VACÍO ────────────────────────────────────────────
+// Valores por defecto al crear un negocio nuevo
 const emptyForm = {
   name: '', phone: '', address: '',
   category: 'Restaurante',
   schedule: '',
   schedule_days: [] as string[],
-  schedule_open1: '07:00', schedule_close1: '12:00',
-  schedule_open2: '14:00', schedule_close2: '18:00',
+  schedule_open1: '', schedule_close1: '',
+  schedule_open2: '', schedule_close2: '',
   schedule_note: '',
   description: '',
   is_active: true, image_url: '',
@@ -22,21 +24,86 @@ const emptyForm = {
 }
 
 export default function AdminPage() {
+
+  // ─── ESTADO DE AUTENTICACIÓN ─────────────────────────────────
   const [auth, setAuth] = useState(false)
+  // false = no autenticado, true = autenticado
+
+  const [isSuperadmin, setIsSuperadmin] = useState(false)
+  // Distingue superadmin (ve todo) de dueño (solo su negocio)
+
+
+  // ─── ESTADO DEL PANEL ────────────────────────────────────────
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<typeof emptyForm>(emptyForm)
   const [uploading, setUploading] = useState(false)
 
-  useEffect(() => { if (auth) fetchAll() }, [auth])
+
+  // ─── VERIFICAR SESIÓN AL CARGAR ──────────────────────────────
+  // Si el usuario ya tenía sesión activa en Supabase, lo autenticamos
+  // automáticamente sin que tenga que volver a escribir su clave
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setAuth(true)
+        checkRole(session.user.id)
+      }
+    })
+  }, [])
+
+  // Cargar negocios cuando el usuario se autentica
+  useEffect(() => { if (auth) fetchAll() }, [auth, isSuperadmin])
+
+
+  // ─── FUNCIONES DE AUTENTICACIÓN ──────────────────────────────
+
+  async function checkRole(userId: string) {
+    // Consulta la tabla user_roles para saber si es superadmin o dueño
+    const { data } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .single()
+    setIsSuperadmin(data?.role === 'superadmin')
+  }
+
+  async function login() {
+    // Se llama desde AdminLoginScreen después de autenticarse con Supabase
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) checkRole(session.user.id)
+    setAuth(true)
+  }
+
+  async function logout() {
+    // Cierra la sesión en Supabase y resetea el estado local
+    await supabase.auth.signOut()
+    setAuth(false)
+    setIsSuperadmin(false)
+    setBusinesses([])
+  }
+
+
+  // ─── FUNCIONES DE BASE DE DATOS ──────────────────────────────
 
   async function fetchAll() {
-    const { data } = await supabase
-      .from('businesses')
-      .select('*')
-      .order('created_at', { ascending: false })
-    setBusinesses(data ?? [])
+    if (isSuperadmin) {
+      // Superadmin ve todos los negocios
+      const { data } = await supabase
+        .from('businesses')
+        .select('*')
+        .order('created_at', { ascending: false })
+      setBusinesses(data ?? [])
+    } else {
+      // Dueño solo ve su propio negocio
+      const { data: { user } } = await supabase.auth.getUser()
+      const { data } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('owner_id', user?.id)
+      setBusinesses(data ?? [])
+    }
   }
 
   async function save() {
@@ -73,6 +140,9 @@ export default function AdminPage() {
     setUploading(false)
   }
 
+
+  // ─── FUNCIONES DE UI ─────────────────────────────────────────
+
   function openNew() {
     setForm(emptyForm)
     setEditingId(null)
@@ -88,10 +158,10 @@ export default function AdminPage() {
       description: b.description ?? '',
       schedule: b.schedule ?? '',
       schedule_days: b.schedule_days ?? [],
-      schedule_open1: b.schedule_open1 || '07:00',
-      schedule_close1: b.schedule_close1 || '12:00',
-      schedule_open2: b.schedule_open2 || '14:00',
-      schedule_close2: b.schedule_close2 || '18:00',
+      schedule_open1: b.schedule_open1 || '',
+      schedule_close1: b.schedule_close1 || '',
+      schedule_open2: b.schedule_open2 || '',
+      schedule_close2: b.schedule_close2 || '',
       schedule_note: b.schedule_note ?? '',
       is_active: b.is_active,
       image_url: b.image_url ?? '',
@@ -102,35 +172,65 @@ export default function AdminPage() {
     setShowModal(true)
   }
 
-  if (!auth) return <AdminLoginScreen onAuth={() => setAuth(true)} />
 
+  // ─── RENDER: LOGIN ───────────────────────────────────────────
+  // Early return — si no está autenticado muestra solo el login
+  if (!auth) return <AdminLoginScreen onAuth={login} />
+
+
+  // ─── RENDER: PANEL ───────────────────────────────────────────
   return (
     <>
       <NavBar />
 
-      <div style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* Encabezado con título y acciones */}
+      <div style={{
+        background: 'var(--bg)',
+        borderBottom: '1px solid var(--border)',
+        padding: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }}>
         <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '18px', fontWeight: 700 }}>
-          Panel de administración
+          {isSuperadmin ? 'Panel de administración' : 'Mi negocio'}
         </h2>
-        <button
-          onClick={openNew}
-          style={{ background: 'var(--green)', color: '#fff', border: 'none', borderRadius: 'var(--radius-sm)', padding: '6px 14px', fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
-        >
-          + Agregar
-        </button>
+
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {/* Solo el superadmin puede agregar negocios nuevos */}
+          {isSuperadmin && (
+            <button
+              onClick={openNew}
+              style={{ background: 'var(--green)', color: '#fff', border: 'none', borderRadius: 'var(--radius-sm)', padding: '6px 14px', fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+            >
+              + Agregar
+            </button>
+          )}
+
+          {/* Botón de cerrar sesión */}
+          <button
+            onClick={logout}
+            style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text2)', borderRadius: 'var(--radius-sm)', padding: '6px 14px', fontFamily: 'DM Sans, sans-serif', fontSize: '13px', cursor: 'pointer' }}
+          >
+            Cerrar sesión
+          </button>
+        </div>
       </div>
 
+      {/* Lista de negocios */}
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', paddingBottom: '80px' }}>
         {businesses.map(b => (
           <BusinessListItem
             key={b.id}
             business={b}
             onEdit={openEdit}
-            onDelete={remove}
+            onDelete={isSuperadmin ? remove : undefined}
+            // Dueño no puede eliminar — solo editar
           />
         ))}
       </div>
 
+      {/* Modal de crear/editar */}
       {showModal && (
         <BusinessFormModal
           form={form}
