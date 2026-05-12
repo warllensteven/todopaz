@@ -224,7 +224,7 @@ export default function AdminPage() {
             key={b.id}
             business={b}
             onEdit={openEdit}
-            onDelete={isSuperadmin ? remove : undefined}
+            onDelete={isSuperadmin ? remove : () => {}}
             // Dueño no puede eliminar — solo editar
           />
         ))}
