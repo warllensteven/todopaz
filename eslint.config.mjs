@@ -14,7 +14,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
   ]),
   {
-    extends: "next/core-web-vitals",
+    extends: ["next/core-web-vitals"],
     rules: {
       "@next/next/no-img-element": "off",
       "@typescript-eslint/no-unused-vars": "warn",
