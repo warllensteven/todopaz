@@ -26,6 +26,16 @@ export default function BusinessListItem({ business: b, onEdit, onDelete }: Prop
             ? ` · ${b.schedule_days[0]}–${b.schedule_days[b.schedule_days.length - 1]} ${b.schedule_open1}–${b.schedule_close1}${b.schedule_open2 ? ' / ' + b.schedule_open2 + '–' + b.schedule_close2 : ''}`
             : b.schedule ? ` · ${b.schedule}` : ''
           }
+
+          {/* Contador de visitas */}
+  <span style={{
+    display: 'inline-flex', alignItems: 'center', gap: '3px',
+    background: 'var(--green-light)', color: 'var(--green)',
+    fontSize: '11px', fontWeight: 600,
+    padding: '2px 7px', borderRadius: '10px',
+  }}>
+    👁 {b.visits ?? 0}
+  </span>
         </div>
       </div>
  

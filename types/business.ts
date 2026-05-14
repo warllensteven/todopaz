@@ -62,6 +62,8 @@ export type Business = {
 
   owner_id: string | null  // ← nuevo
   
+  visits: number
+
   created_at: string
   // Fecha de creación (timestamp)
   // Se usa para ordenar (más recientes primero)

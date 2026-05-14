@@ -33,7 +33,7 @@ interface Props {
 }
  
 const CATEGORIES = [
-  'Restaurante', 'Panadería', 'Barbería', 'Supermercado', 'Estetica', 'Accesorios',
+  'Restaurante', 'Comidas Rapidas', 'Fruver', 'Panadería', 'Barbería', 'Supermercado', 'Estetica', 'Accesorios',
   'Servicio', 'Farmacia', 'Ropa', 'Calzado', 'Tienda Naturista', 'Bar', 'Otro'
 ]
  

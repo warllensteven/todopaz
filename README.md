@@ -57,3 +57,32 @@ Navega a `/admin` e ingresa la clave definida en `ADMIN_KEY` dentro de `app/admi
 - [ ] Sistema de pedidos
 - [ ] Servicio de mototaxi
 - [ ] Publicidad para negocios destacados
+
+##
+
+Últimas funcionalidades agregadas:
+
+Sistema de autenticación real con Supabase Auth (email + contraseña)
+Roles: superadmin (ve todo) y owner (solo su negocio)
+Tabla user_roles en Supabase
+Cerrar sesión desde el panel
+Sesión persistente con Supabase (no pide login al volver atrás)
+Campo visits en tabla businesses
+Función RPC increment_visits en Supabase
+Negocios ordenados por visitas en el Home
+Contador de visitas visible en el panel admin
+
+Para crear un usuario dueño de negocio:
+
+Supabase → Authentication → Users → Add user
+Copiar UUID
+SQL: INSERT INTO user_roles (user_id, role) VALUES ('UUID', 'owner');
+SQL: UPDATE businesses SET owner_id = 'UUID' WHERE id = 'UUID-NEGOCIO';
+
+Claude respondió: Pasos para agregar una categoría — 4 archivos, sin tocar Supabase:
+Pasos para agregar una categoría — 4 archivos, sin tocar Supabase:
+
+app/admin/page.tsx → agregar en CATEGORIES
+app/page.tsx → agregar en CATS_EMOJI
+components/BizCard.tsx → agregar en CATS_META
+app/negocio/[id]/page.tsx → agregar en CATS_META
