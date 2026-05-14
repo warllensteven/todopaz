@@ -9,7 +9,6 @@ import BusinessListItem from '@/components/admin/Businesslistitem'
 import BusinessFormModal from '@/components/admin/Businessformmodal'
 
 // ─── FORMULARIO VACÍO ────────────────────────────────────────────
-// Valores por defecto al crear un negocio nuevo
 const emptyForm = {
   name: '', phone: '', address: '',
   category: 'Restaurante',
@@ -27,11 +26,7 @@ export default function AdminPage() {
 
   // ─── ESTADO DE AUTENTICACIÓN ─────────────────────────────────
   const [auth, setAuth] = useState(false)
-  // false = no autenticado, true = autenticado
-
   const [isSuperadmin, setIsSuperadmin] = useState(false)
-  // Distingue superadmin (ve todo) de dueño (solo su negocio)
-
 
   // ─── ESTADO DEL PANEL ────────────────────────────────────────
   const [businesses, setBusinesses] = useState<Business[]>([])
@@ -42,42 +37,47 @@ export default function AdminPage() {
 
 
   // ─── VERIFICAR SESIÓN AL CARGAR ──────────────────────────────
-  // Si el usuario ya tenía sesión activa en Supabase, lo autenticamos
-  // automáticamente sin que tenga que volver a escribir su clave
+  // Esperamos a checkRole antes de setAuth(true) para evitar
+  // race condition donde fetchAll corre con isSuperadmin = false
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    async function initAuth() {
+      const { data: { session } } = await supabase.auth.getSession()
       if (session) {
+        await checkRole(session.user.id)
+        // Solo después de conocer el rol autenticamos
         setAuth(true)
-        checkRole(session.user.id)
       }
-    })
+    }
+    initAuth()
   }, [])
 
-  // Cargar negocios cuando el usuario se autentica
+  // Cargar negocios cuando auth o isSuperadmin cambian
   useEffect(() => { if (auth) fetchAll() }, [auth, isSuperadmin])
 
 
   // ─── FUNCIONES DE AUTENTICACIÓN ──────────────────────────────
 
   async function checkRole(userId: string) {
-    // Consulta la tabla user_roles para saber si es superadmin o dueño
+    // Retorna el rol para poder usarlo inmediatamente si es necesario
     const { data } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', userId)
       .single()
     setIsSuperadmin(data?.role === 'superadmin')
+    return data?.role
   }
 
   async function login() {
-    // Se llama desde AdminLoginScreen después de autenticarse con Supabase
+    // Esperamos a conocer el rol antes de mostrar el panel
     const { data: { session } } = await supabase.auth.getSession()
-    if (session) checkRole(session.user.id)
+    if (session) {
+      await checkRole(session.user.id)
+    }
     setAuth(true)
   }
 
   async function logout() {
-    // Cierra la sesión en Supabase y resetea el estado local
     await supabase.auth.signOut()
     setAuth(false)
     setIsSuperadmin(false)
@@ -87,25 +87,23 @@ export default function AdminPage() {
 
   // ─── FUNCIONES DE BASE DE DATOS ──────────────────────────────
 
-  async function fetchAll() {
-    if (isSuperadmin) {
-      // Superadmin ve todos los negocios
-      const { data } = await supabase
-        .from('businesses')
-        .select('*')
-        .order('created_at', { ascending: false })
-      setBusinesses(data ?? [])
-    } else {
-      // Dueño solo ve su propio negocio
-      const { data: { user } } = await supabase.auth.getUser()
-      const { data } = await supabase
-        .from('businesses')
-        .select('*')
-        .eq('owner_id', user?.id)
-      setBusinesses(data ?? [])
-    }
+async function fetchAll() {
+  if (isSuperadmin) {
+    const { data } = await supabase
+      .from('businesses')
+      .select('*')
+      .order('created_at', { ascending: false })
+    setBusinesses(data ?? [])
+  } else {
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data } = await supabase
+      .from('businesses')
+      .select('*')
+      .eq('owner_id', user?.id)
+    setBusinesses(data ?? [])
   }
-
+}
+  
   async function save() {
     if (!form.name || !form.phone) return alert('Nombre y teléfono son requeridos')
     if (editingId) {
@@ -174,7 +172,6 @@ export default function AdminPage() {
 
 
   // ─── RENDER: LOGIN ───────────────────────────────────────────
-  // Early return — si no está autenticado muestra solo el login
   if (!auth) return <AdminLoginScreen onAuth={login} />
 
 
@@ -183,7 +180,6 @@ export default function AdminPage() {
     <>
       <NavBar />
 
-      {/* Encabezado con título y acciones */}
       <div style={{
         background: 'var(--bg)',
         borderBottom: '1px solid var(--border)',
@@ -197,7 +193,6 @@ export default function AdminPage() {
         </h2>
 
         <div style={{ display: 'flex', gap: '8px' }}>
-          {/* Solo el superadmin puede agregar negocios nuevos */}
           {isSuperadmin && (
             <button
               onClick={openNew}
@@ -206,8 +201,6 @@ export default function AdminPage() {
               + Agregar
             </button>
           )}
-
-          {/* Botón de cerrar sesión */}
           <button
             onClick={logout}
             style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text2)', borderRadius: 'var(--radius-sm)', padding: '6px 14px', fontFamily: 'DM Sans, sans-serif', fontSize: '13px', cursor: 'pointer' }}
@@ -217,7 +210,6 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Lista de negocios */}
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', paddingBottom: '80px' }}>
         {businesses.map(b => (
           <BusinessListItem
@@ -225,12 +217,10 @@ export default function AdminPage() {
             business={b}
             onEdit={openEdit}
             onDelete={isSuperadmin ? remove : () => {}}
-            // Dueño no puede eliminar — solo editar
           />
         ))}
       </div>
 
-      {/* Modal de crear/editar */}
       {showModal && (
         <BusinessFormModal
           form={form}
