@@ -10,15 +10,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Traer todos los negocios activos
   const { data: businesses } = await supabase
     .from('businesses')
-    .select('id, created_at')
+    .select('id, created_at, slug')
     .eq('is_active', true)
 
-  const businessUrls = (businesses ?? []).map(b => ({
-    url: `https://todopaz.vercel.app/negocio/${b.id}`,
-    lastModified: new Date(b.created_at),
-    changeFrequency: 'weekly' as const,
-    priority: 0.8,
-  }))
+const businessUrls = (businesses ?? []).map(b => ({
+  url: `https://todopaz.vercel.app/negocio/${b.slug ?? b.id}`,
+  lastModified: new Date(b.created_at),
+  changeFrequency: 'weekly' as const,
+  priority: 0.8,
+}))
 
   return [
     {

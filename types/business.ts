@@ -62,6 +62,8 @@ export type Business = {
 
   owner_id: string | null  // ← nuevo
   
+  slug: string | null
+
   visits: number
 
   created_at: string

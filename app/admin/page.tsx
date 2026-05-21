@@ -104,16 +104,27 @@ async function fetchAll() {
   }
 }
   
-  async function save() {
-    if (!form.name || !form.phone) return alert('Nombre y teléfono son requeridos')
-    if (editingId) {
-      await supabase.from('businesses').update(form).eq('id', editingId)
-    } else {
-      await supabase.from('businesses').insert(form)
-    }
-    setShowModal(false)
-    fetchAll()
+async function save() {
+  if (!form.name || !form.phone) return alert('Nombre y teléfono son requeridos')
+
+  // Generar slug desde el nombre
+  const slug = form.name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .trim()
+
+  if (editingId) {
+    await supabase.from('businesses').update({ ...form, slug }).eq('id', editingId)
+  } else {
+    await supabase.from('businesses').insert({ ...form, slug })
   }
+
+  setShowModal(false)
+  fetchAll()
+}
 
   async function remove(id: string) {
     if (!confirm('¿Eliminar este negocio?')) return

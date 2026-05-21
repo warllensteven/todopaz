@@ -46,20 +46,19 @@ function buildOpeningHours(biz: BizSEO): string[] {
 }
 
 // ─── SELECT COMPARTIDO ───────────────────────────────────────────
-// Un solo string para no repetirlo en generateMetadata y NegocioPage
 const SELECT_FIELDS = 'name, description, image_url, category, phone, address, schedule_days, schedule_open1, schedule_close1, schedule_open2, schedule_close2'
 
 // ─── METADATA ────────────────────────────────────────────────────
 export async function generateMetadata(
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }  // ← slug
 ): Promise<Metadata> {
 
-  const { id } = await params
+  const { slug } = await params  // ← slug
 
   const { data: biz } = await supabaseServer
     .from('businesses')
     .select(SELECT_FIELDS)
-    .eq('id', id)
+    .eq('slug', slug)  // ← busca por slug
     .single() as { data: BizSEO | null, error: unknown }
 
   if (!biz) return { title: 'Negocio no encontrado' }
@@ -72,7 +71,7 @@ export async function generateMetadata(
     title,
     description,
     alternates: {
-      canonical: `https://todopaz.vercel.app/negocio/${id}`
+      canonical: `https://todopaz.vercel.app/negocio/${slug}`  // ← slug
     },
     openGraph: {
       title: `${biz.name} | TodoPaz`,
@@ -94,15 +93,14 @@ export async function generateMetadata(
 
 // ─── PÁGINA ──────────────────────────────────────────────────────
 export default async function NegocioPage(
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }  // ← slug
 ) {
-  const { id } = await params
+  const { slug } = await params  // ← slug
 
-  // Mismo select que generateMetadata — incluye campos de horario
   const { data: biz } = await supabaseServer
     .from('businesses')
     .select(SELECT_FIELDS)
-    .eq('id', id)
+    .eq('slug', slug)  // ← busca por slug
     .single() as { data: BizSEO | null, error: unknown }
 
   const jsonLd = biz ? {
@@ -113,14 +111,14 @@ export default async function NegocioPage(
     telephone: `+${biz.phone}`,
     image: biz.image_url,
     address: {
-  '@type': 'PostalAddress',
-  streetAddress: biz.address ?? '',
-  addressLocality: 'Paz de Ariporo',
-  addressRegion: 'Casanare',
-  addressCountry: 'CO',
-  postalCode: '856040', 
-},
-    url: `https://todopaz.vercel.app/negocio/${id}`,
+      '@type': 'PostalAddress',
+      streetAddress: biz.address ?? '',
+      addressLocality: 'Paz de Ariporo',
+      addressRegion: 'Casanare',
+      addressCountry: 'CO',
+      postalCode: '856040',
+    },
+    url: `https://todopaz.vercel.app/negocio/${slug}`,  // ← slug
     geo: {
       '@type': 'GeoCoordinates',
       latitude: 5.8797,
@@ -140,7 +138,7 @@ export default async function NegocioPage(
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       )}
-      <NegocioClient id={id} />
+      <NegocioClient slug={slug} />  {/* ← pasa slug */}
     </>
   )
 }
