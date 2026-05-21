@@ -18,7 +18,9 @@ export default function CatalogoPage() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const id = Array.isArray(params.id) ? params.id[0] : params.id ?? ''
+
+  // ← usa slug en vez de id
+  const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug ?? ''
 
   const [biz, setBiz] = useState<Business | null>(null)
   const [products, setProducts] = useState<Product[]>([])
@@ -29,24 +31,37 @@ export default function CatalogoPage() {
   const [showOrder, setShowOrder] = useState(false)
 
   useEffect(() => {
-    // Si viene con ?cat=Analgésicos desde CatalogSection, lo aplicamos
     const cat = searchParams.get('cat')
     if (cat) setSelectedCat(cat)
   }, [searchParams])
 
   useEffect(() => {
-    if (!id) return
+    if (!slug) return
+
     async function fetchData() {
-      const [{ data: bizData }, { data: prodData }] = await Promise.all([
-        supabase.from('businesses').select('*').eq('id', id).single(),
-        supabase.from('products').select('*').eq('business_id', id).order('category'),
-      ])
-      if (bizData) setBiz(bizData)
-      setProducts(prodData ?? [])
+      // Primero traemos el negocio por slug
+      const { data: bizData } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('slug', slug)  // ← busca por slug
+        .single()
+
+      if (bizData) {
+        setBiz(bizData)
+        // Luego traemos productos con el id real
+        const { data: prodData } = await supabase
+          .from('products')
+          .select('*')
+          .eq('business_id', bizData.id)
+          .order('category')
+        setProducts(prodData ?? [])
+      }
+
       setLoading(false)
     }
+
     fetchData()
-  }, [id])
+  }, [slug])
 
   const categories = useMemo(() => {
     return Array.from(new Set(products.map(p => p.category)))
@@ -117,7 +132,7 @@ export default function CatalogoPage() {
       <div style={{ background: 'var(--green)', padding: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
           <button
-            onClick={() => router.push(`/negocio/${id}`)}
+            onClick={() => router.push(`/negocio/${slug}`)}  // ← slug aquí
             style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', width: '36px', height: '36px', borderRadius: '8px', cursor: 'pointer', flexShrink: 0 }}
           >
             ←
@@ -138,7 +153,7 @@ export default function CatalogoPage() {
         />
       </div>
 
-      {/* Filtro de categorías vertical */}
+      {/* Filtro de categorías */}
       <div style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)', padding: '12px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
         <button
           onClick={() => setSelectedCat(null)}
@@ -167,7 +182,7 @@ export default function CatalogoPage() {
         ))}
       </div>
 
-      {/* Productos agrupados por categoría en grid */}
+      {/* Productos agrupados por categoría */}
       <div style={{ padding: '16px', paddingBottom: totalItems > 0 ? '90px' : '40px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
         {Object.keys(grouped).length === 0 && (
           <p style={{ textAlign: 'center', color: 'var(--text3)', padding: '40px 0' }}>
@@ -177,7 +192,6 @@ export default function CatalogoPage() {
 
         {Object.entries(grouped).map(([category, items]) => (
           <div key={category}>
-            {/* Título de categoría */}
             <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '15px', fontWeight: 700, color: 'var(--text)', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid var(--border)' }}>
               {category}
               <span style={{ fontSize: '12px', fontWeight: 400, color: 'var(--text3)', marginLeft: '8px' }}>
@@ -185,7 +199,6 @@ export default function CatalogoPage() {
               </span>
             </div>
 
-            {/* Grid de productos */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
               {items.map(p => (
                 <ProductCard key={p.id} product={p} onSelect={handleSelectProduct} />
