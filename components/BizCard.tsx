@@ -8,7 +8,7 @@ export default function BizCard({ biz }: { biz: Business }) {
   const open = isOpenNow(biz)
  
   return (
-    <Link href={`/negocio/${biz.slug ?? biz.id}`} style={{ textDecoration: 'none' }}>
+    <Link href={`/negocio/${biz.slug}`} style={{ textDecoration: 'none' }}>
       <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', padding: '14px', display: 'flex', gap: '14px', alignItems: 'flex-start', cursor: 'pointer', transition: 'all .2s' }}>
  
         {/* Imagen / emoji */}
