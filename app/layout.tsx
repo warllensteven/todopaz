@@ -3,6 +3,11 @@ import './globals.css'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://todopaz.vercel.app'),
+
+  verification: {
+    google: '56e4kZ5FY0Px2aSSCXGJX8W9n6fAiL8KIZg3UyyQ-qE',
+  },
+
   title: {
     default: 'TodoPaz — Negocios de Paz de Ariporo',
     template: '%s | TodoPaz',
