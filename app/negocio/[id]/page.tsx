@@ -7,18 +7,60 @@ const supabaseServer = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-// ← params ahora es Promise en Next.js 15
+// ─── TIPO COMPARTIDO ─────────────────────────────────────────────
+type BizSEO = {
+  name: string
+  description: string | null
+  image_url: string | null
+  category: string
+  phone: string
+  address: string | null
+  schedule_days: string[]
+  schedule_open1: string
+  schedule_close1: string
+  schedule_open2: string
+  schedule_close2: string
+}
+
+// ─── DÍAS AL FORMATO SCHEMA.ORG ──────────────────────────────────
+const DAY_MAP: Record<string, string> = {
+  'Lun': 'Mo', 'Mar': 'Tu', 'Mié': 'We',
+  'Jue': 'Th', 'Vie': 'Fr', 'Sáb': 'Sa', 'Dom': 'Su'
+}
+
+function buildOpeningHours(biz: BizSEO): string[] {
+  if (!biz.schedule_days?.length) return []
+
+  const days = biz.schedule_days.map(d => DAY_MAP[d] ?? d).join('-')
+  const hours: string[] = []
+
+  if (biz.schedule_open1 && biz.schedule_close1) {
+    hours.push(`${days} ${biz.schedule_open1}-${biz.schedule_close1}`)
+  }
+
+  if (biz.schedule_open2 && biz.schedule_close2) {
+    hours.push(`${days} ${biz.schedule_open2}-${biz.schedule_close2}`)
+  }
+
+  return hours
+}
+
+// ─── SELECT COMPARTIDO ───────────────────────────────────────────
+// Un solo string para no repetirlo en generateMetadata y NegocioPage
+const SELECT_FIELDS = 'name, description, image_url, category, phone, address, schedule_days, schedule_open1, schedule_close1, schedule_open2, schedule_close2'
+
+// ─── METADATA ────────────────────────────────────────────────────
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string }> }
 ): Promise<Metadata> {
 
-  const { id } = await params  // ← await aquí
+  const { id } = await params
 
   const { data: biz } = await supabaseServer
     .from('businesses')
-    .select('name, description, image_url, category, phone, address')
+    .select(SELECT_FIELDS)
     .eq('id', id)
-    .single()
+    .single() as { data: BizSEO | null, error: unknown }
 
   if (!biz) return { title: 'Negocio no encontrado' }
 
@@ -50,16 +92,18 @@ export async function generateMetadata(
   }
 }
 
+// ─── PÁGINA ──────────────────────────────────────────────────────
 export default async function NegocioPage(
-  { params }: { params: Promise<{ id: string }> }  // ← Promise aquí también
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params  // ← await aquí
+  const { id } = await params
 
+  // Mismo select que generateMetadata — incluye campos de horario
   const { data: biz } = await supabaseServer
     .from('businesses')
-    .select('name, description, image_url, category, phone, address')
+    .select(SELECT_FIELDS)
     .eq('id', id)
-    .single()
+    .single() as { data: BizSEO | null, error: unknown }
 
   const jsonLd = biz ? {
     '@context': 'https://schema.org',
@@ -76,6 +120,15 @@ export default async function NegocioPage(
       addressCountry: 'CO',
     },
     url: `https://todopaz.vercel.app/negocio/${id}`,
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: 5.8797,
+      longitude: -71.8917,
+    },
+    areaServed: 'Paz de Ariporo, Casanare, Colombia',
+    currenciesAccepted: 'COP',
+    priceRange: '$$',
+    openingHours: buildOpeningHours(biz),
   } : null
 
   return (
