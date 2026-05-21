@@ -3,7 +3,8 @@ export type Business = {
   id: string
   // Identificador único del negocio (UUID generado por Supabase)
   // Es la clave principal → se usa para rutas (/negocio/:id), updates y deletes
-
+  slug: string | null
+  
   name: string
   // Nombre del negocio
   // Ej: "Pollo la 23"
@@ -61,8 +62,6 @@ export type Business = {
   // false → oculto (pero sigue existiendo en admin)
 
   owner_id: string | null  // ← nuevo
-  
-  slug: string | null
 
   visits: number
 

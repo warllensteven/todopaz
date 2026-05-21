@@ -132,7 +132,7 @@ export default function CatalogoPage() {
       <div style={{ background: 'var(--green)', padding: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
           <button
-            onClick={() => router.push(`/negocio/${slug}`)}  // ← slug aquí
+            onClick={() => router.push(`/negocio/${biz.slug}`)}  // ← slug aquí
             style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', width: '36px', height: '36px', borderRadius: '8px', cursor: 'pointer', flexShrink: 0 }}
           >
             ←

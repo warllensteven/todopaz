@@ -263,20 +263,72 @@ export default function NegocioClient({ slug }: NegocioClientProps) {  // ← sl
         {!hasProducts && <WhatsAppButton phone={biz.phone} />}
       </div>
 
-      {/* ─── BOTÓN PEDIDO ──────────────────────────────── */}
-      {totalItems > 0 && (
-        <div style={{
-          position: 'fixed',
-          bottom: 0, left: 0, right: 0,
-          padding: '12px 16px',
-          background: 'var(--bg)',
-          borderTop: '1px solid var(--border)'
-        }}>
-          <button onClick={() => setShowOrder(true)}>
-            Ver pedido
-          </button>
-        </div>
-      )}
+{/* Botón flotante del pedido */}
+{totalItems > 0 && (
+  <div
+    style={{
+      position: 'fixed',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      padding: '12px 16px',
+      background: 'var(--bg)',
+      borderTop: '1px solid var(--border)',
+      zIndex: 100
+    }}
+  >
+    <button
+      onClick={() => setShowOrder(true)}
+      style={{
+        width: '100%',
+        padding: '14px',
+        background: 'var(--green)',
+        border: 'none',
+        borderRadius: 'var(--radius-sm)',
+        color: '#fff',
+        fontFamily: 'DM Sans, sans-serif',
+        fontSize: '15px',
+        fontWeight: 600,
+        cursor: 'pointer',
+
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '12px'
+      }}
+    >
+      <span
+        style={{
+          background: 'rgba(255,255,255,0.2)',
+          borderRadius: '12px',
+          padding: '2px 10px',
+          fontSize: '13px',
+          flexShrink: 0
+        }}
+      >
+        {totalItems} {totalItems === 1 ? 'producto' : 'productos'}
+      </span>
+
+      <span
+        style={{
+          flex: 1,
+          textAlign: 'center'
+        }}
+      >
+        Ver pedido
+      </span>
+
+      <span
+        style={{
+          fontSize: '14px',
+          flexShrink: 0
+        }}
+      >
+        →
+      </span>
+    </button>
+  </div>
+)}
 
       {/* ─── DRAWER PEDIDO ─────────────────────────────── */}
       {showOrder && (
