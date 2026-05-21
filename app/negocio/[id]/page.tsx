@@ -7,14 +7,17 @@ const supabaseServer = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// ← params ahora es Promise en Next.js 15
 export async function generateMetadata(
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<Metadata> {
+
+  const { id } = await params  // ← await aquí
 
   const { data: biz } = await supabaseServer
     .from('businesses')
     .select('name, description, image_url, category, phone, address')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!biz) return { title: 'Negocio no encontrado' }
@@ -26,12 +29,9 @@ export async function generateMetadata(
   return {
     title,
     description,
-
-    // ← URL canónica — evita contenido duplicado
     alternates: {
-      canonical: `https://todopaz.vercel.app/negocio/${params.id}`
+      canonical: `https://todopaz.vercel.app/negocio/${id}`
     },
-
     openGraph: {
       title: `${biz.name} | TodoPaz`,
       description,
@@ -51,16 +51,16 @@ export async function generateMetadata(
 }
 
 export default async function NegocioPage(
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }  // ← Promise aquí también
 ) {
-  // Traemos el negocio en el servidor para el JSON-LD
+  const { id } = await params  // ← await aquí
+
   const { data: biz } = await supabaseServer
     .from('businesses')
     .select('name, description, image_url, category, phone, address')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
-  // JSON-LD — datos estructurados para Google
   const jsonLd = biz ? {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
@@ -75,19 +75,18 @@ export default async function NegocioPage(
       addressRegion: 'Casanare',
       addressCountry: 'CO',
     },
-    url: `https://todopaz.vercel.app/negocio/${params.id}`,
+    url: `https://todopaz.vercel.app/negocio/${id}`,
   } : null
 
   return (
     <>
-      {/* JSON-LD inyectado en el <head> por Next.js */}
       {jsonLd && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       )}
-      <NegocioClient id={params.id} />
+      <NegocioClient id={id} />
     </>
   )
 }
