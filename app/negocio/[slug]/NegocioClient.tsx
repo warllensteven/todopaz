@@ -234,7 +234,7 @@ export default function NegocioClient({ slug }: NegocioClientProps) {  // ← sl
                 <CatalogSection
                   category={cat}
                   products={grouped[cat]}
-                  businessId={biz.id}  // ← usa biz.id real, no slug
+                  businessSlug={biz.id}  // ← usa biz.id real, no slug
                   onSelect={handleSelectProduct}
                 />
               </div>

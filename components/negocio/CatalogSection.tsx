@@ -7,11 +7,11 @@ import ProductCard from '@/components/negocio/ProductCard'
 interface Props {
   category: string
   products: Product[]
-  businessId: string
+  businessSlug: string
   onSelect: (p: Product) => void
 }
 
-export default function CatalogSection({ category, products, businessId, onSelect }: Props) {
+export default function CatalogSection({ category, products, businessSlug, onSelect }: Props) {
   const router = useRouter()
 
   return (
@@ -23,7 +23,7 @@ export default function CatalogSection({ category, products, businessId, onSelec
           {category}
         </h3>
         <button
-          onClick={() => router.push(`/negocio/${businessId}/catalogo?cat=${encodeURIComponent(category)}`)}
+          onClick={() => router.push(`/negocio/${businessSlug}/catalogo?cat=${encodeURIComponent(category)}`)}
           style={{ background: 'transparent', border: 'none', fontSize: '13px', color: 'var(--green)', fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}
         >
           Ver más →
